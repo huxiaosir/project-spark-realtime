@@ -1,0 +1,86 @@
+项目需要启动的服务：  zookeeper：zk.sh
+                   kafka: kf.sh
+                   elasticsearch: es.sh
+                   maxwell(监控数据库): bin/maxwell --config config.properties --daemon
+日志数据生成脚本： log.sh 2023-01-03 (生成数据的日期)
+业务数据生成脚本： dbs.sh 2023-01-03 (生成数据的日期)
+
+api测试： utools -> post
+
+访问页面：http://bigdata.gmall.com  修改 c盘/system32/etc/hosts文件， 进行主机名映射 127.0.0.1 bigdata.gmall.com
+
+总结：
+    Spark：  算子： 转换算子：  map
+                             mapPartition
+                             transform
+                             filter
+                             join
+                   行动算子:  foreach
+                             foreachPartition
+                             foreachRDD
+                             print
+                   (每个算子的功能，执行位置，执行频率，项目中应用场景)
+            sparkStreaming： 环境搭建
+                             kafka数据源： 默认offset消费
+                                          指定offset消费
+            广播变量
+
+    Kafka： Topic：   topic维护：    Broker： Controller
+                                    分区
+                                    副本： leader选举
+                                          follower
+                                    命令操作：   kafka-topic.sh:     create/delete/list/describe
+            生产者:    发送方式：   同步(来一条发一条)/异步(缓冲区)
+                      数据可靠性保障：  acks -> {0,  1,  -1(all)}
+                      分区策略：     指定分区号
+                                   指定key
+                                   粘性分区策略
+                      消息发送流程
+            消费者:    消费方式：   分区和消费者对应关系
+                      分区策略：   range  /  roundrobin  /  粘性分区策略
+                      offset：    offset重置：   重置情况，重置的选项
+                                  offset提交：   自动提交  /  手动提交
+                                  offset维护的信息：   GPT
+                      消费问题：   重复消费
+                                  漏消费
+
+    Redis： 单线程 + I/O多路复用
+            五大数据类型：     string  set  zset  hash  list(每中类型的应用场景)
+            持久化：    RDB:    持久化方式(快照)
+                               优缺点：恢复速度快，节省时间，节省磁盘； 可能会丢失最后一次备份后的数据
+                       AOF:    持久化方式(写操作追加)
+                               优缺点：备份频率较高，丢失数据风险小，可读的日志文件；占用磁盘空间大，高频率写可能会写残AOF文件
+                       如何选择？
+            主从复制：   一主多从
+                       薪火相传
+                       哨兵模式：    哨兵的作用
+                                   主从切换的过程 {客观下线  /  主观下线  /  切换的流程  /  从机的选择}
+            集群：      集群架构：    去中心化配置
+                       16384：      整个集群规划成16384个插槽，动态增加或减少集群机器数量并不会对数据的存储在哪个插槽产生很大影响，不会发生很大规模的rehash操作
+                       集群限制：    多键操作不被支持，除非使用{}
+                                   事务不被支持
+                                   lua脚本不被支持
+            Jedis操作：    单节点：    Jedis、 JedisPool
+                          哨兵模式：   JedisSentinelPool
+                          集群模式：   JedisCluster
+
+    Maxwell:    工作原理：   MySQL主从复制：  binlog： binlog级别：{statement/row/mixed}
+                实时采集：   maxwell
+                全量同步：   maxwell-bootstrap
+
+    ElasticSearch：  基本数据操作： PUT  /  POST  /  DELETE  /  GET
+                     search：    过滤  /  聚合  /  排序  /  高亮
+                     服务状态查询：    GET _cat/xxx?v
+                     SQL支持
+                     中文分词：  ik分词器：  ik_smart  /  ik_max_word
+                     索引分割 / 索引别名 / 索引模板
+                     读写原理：  基于id读和写
+                               搜索流程
+                               shard和段：   shard数量规划： 数据量  /  内存
+                                            shard优化：    归档冷数据  /  段合并
+                                            段：  合并段(手动合并段)
+                     RestHighLevelClient：   写：  幂等写  /  非幂等写  /  批量写
+                                             读：  单条读  /  条件的读  /  聚合的读
+                     Kibana：    控制台  /  BI
+
+    SpringBoot：
